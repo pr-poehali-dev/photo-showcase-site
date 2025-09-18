@@ -10,6 +10,7 @@ const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [showUpload, setShowUpload] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   
   const handlePasswordSubmit = () => {
     if (password === 'myphotos2024') {
@@ -21,45 +22,64 @@ const Index = () => {
     }
   };
 
-  // Массив фотографий для галереи
-  const photos = [
+  // Массив фотографий для галереи с категориями
+  const allPhotos = [
     {
       id: 1,
       src: '/img/bb5e3b60-5006-42e6-bf84-b297dd537dea.jpg',
-      title: 'Современная композиция',
-      description: 'Яркий дизайн с градиентами'
+      title: 'Стильный момент',
+      description: 'Когда настроение на высоте',
+      category: 'beautiful'
     },
     {
       id: 2,
       src: '/img/7a2ba191-ac5e-4f67-b7c7-ae2c8529a185.jpg',
-      title: 'Горный пейзаж',
-      description: 'Драматический закат'
+      title: 'Закат в горах',
+      description: 'Моё любимое место для размышлений',
+      category: 'favorite'
     },
     {
       id: 3,
       src: '/img/50d97dcb-9588-4bca-8868-a06f58a23f34.jpg',
-      title: 'Городская жизнь',
-      description: 'Неоновые огни города'
+      title: 'Городские приключения',
+      description: 'Попыталась сделать серьёзное лицо',
+      category: 'funny'
     },
     {
       id: 4,
       src: 'https://v3b.fal.media/files/b/lion/P7CH6oWEzB30Yt9i2jScU_output.png',
-      title: 'Портрет у моря',
-      description: 'Естественное освещение'
+      title: 'У моря',
+      description: 'Идеальный день на побережье',
+      category: 'beautiful'
     },
     {
       id: 5,
       src: '/img/bb5e3b60-5006-42e6-bf84-b297dd537dea.jpg',
-      title: 'Абстрактное искусство',
-      description: 'Игра цветов и форм'
+      title: 'Творческий беспорядок',
+      description: 'Когда пыталась быть художником',
+      category: 'funny'
     },
     {
       id: 6,
       src: '/img/7a2ba191-ac5e-4f67-b7c7-ae2c8529a185.jpg',
-      title: 'Природная красота',
-      description: 'Величие природы'
+      title: 'Волшебный рассвет',
+      description: 'За это фото проснулась в 5 утра',
+      category: 'favorite'
     }
   ];
+
+  // Категории с забавными названиями
+  const categories = [
+    { id: 'all', name: 'Все фото', icon: 'Grid' },
+    { id: 'favorite', name: 'Мои любимые', icon: 'Heart' },
+    { id: 'beautiful', name: 'Здесь я красивая', icon: 'Star' },
+    { id: 'funny', name: 'А здесь я смешная', icon: 'Smile' }
+  ];
+
+  // Фильтруем фото по выбранной категории
+  const photos = selectedCategory === 'all' 
+    ? allPhotos 
+    : allPhotos.filter(photo => photo.category === selectedCategory);
 
   const nextImage = () => {
     if (selectedImage !== null) {
@@ -89,7 +109,8 @@ const Index = () => {
             МОИ ФОТО
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 animate-fade-in max-w-2xl mx-auto">
-            Не поняла как сделать ссылку на фото, поэтому создала сайт с ними
+            Не поняла как сделать ссылку на фото,<br/>
+            поэтому создала сайт с ними
           </p>
           
           {/* Кнопки действий */}
@@ -179,6 +200,27 @@ const Index = () => {
           </div>
         </header>
 
+        {/* Фильтры категорий */}
+        <div className="container mx-auto px-4 mb-8">
+          <div className="flex flex-wrap justify-center gap-4">
+            {categories.map(category => (
+              <Button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                className={`px-6 py-2 rounded-full transition-all duration-300 ${
+                  selectedCategory === category.id 
+                    ? 'bg-modern text-white shadow-lg' 
+                    : 'border-modern text-modern hover:bg-modern hover:text-white'
+                }`}
+              >
+                <Icon name={category.icon as any} className="mr-2" size={16} />
+                {category.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+
         {/* Сетка фотографий */}
         <main className="container mx-auto px-4 pb-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -194,7 +236,7 @@ const Index = () => {
                       <img
                         src={photo.src}
                         alt={photo.title}
-                        className="w-full h-64 md:h-80 object-cover transition-transform duration-700 group-hover:scale-110 grayscale hover:grayscale-0"
+                        className="w-full h-64 md:h-80 object-cover transition-transform duration-700 group-hover:scale-110"
                         loading="lazy"
                       />
                       

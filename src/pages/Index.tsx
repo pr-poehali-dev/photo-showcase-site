@@ -15,7 +15,7 @@ const Index = () => {
   const [uploadCategory, setUploadCategory] = useState('beautiful');
   
   const handlePasswordSubmit = () => {
-    if (password === 'myphotos2024') {
+    if (password === 'эвелинушка') {
       setIsAuthenticated(true);
       setShowUpload(true);
       setPassword('');

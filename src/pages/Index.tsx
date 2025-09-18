@@ -11,6 +11,8 @@ const Index = () => {
   const [password, setPassword] = useState('');
   const [showUpload, setShowUpload] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [uploadCategory, setUploadCategory] = useState('beautiful');
   
   const handlePasswordSubmit = () => {
     if (password === 'myphotos2024') {
@@ -22,74 +24,49 @@ const Index = () => {
     }
   };
 
-  // Массив фотографий для галереи с категориями
-  const allPhotos = [
-    {
-      id: 1,
-      src: '/img/bb5e3b60-5006-42e6-bf84-b297dd537dea.jpg',
-      title: 'Стильный момент',
-      description: 'Когда настроение на высоте',
-      category: 'beautiful'
-    },
-    {
-      id: 2,
-      src: '/img/7a2ba191-ac5e-4f67-b7c7-ae2c8529a185.jpg',
-      title: 'Закат в горах',
-      description: 'Моё любимое место для размышлений',
-      category: 'favorite'
-    },
-    {
-      id: 3,
-      src: '/img/50d97dcb-9588-4bca-8868-a06f58a23f34.jpg',
-      title: 'Городские приключения',
-      description: 'Попыталась сделать серьёзное лицо',
-      category: 'funny'
-    },
-    {
-      id: 4,
-      src: 'https://v3b.fal.media/files/b/lion/P7CH6oWEzB30Yt9i2jScU_output.png',
-      title: 'У моря',
-      description: 'Идеальный день на побережье',
-      category: 'beautiful'
-    },
-    {
-      id: 5,
-      src: '/img/bb5e3b60-5006-42e6-bf84-b297dd537dea.jpg',
-      title: 'Творческий беспорядок',
-      description: 'Когда пыталась быть художником',
-      category: 'funny'
-    },
-    {
-      id: 6,
-      src: '/img/7a2ba191-ac5e-4f67-b7c7-ae2c8529a185.jpg',
-      title: 'Волшебный рассвет',
-      description: 'За это фото проснулась в 5 утра',
-      category: 'favorite'
-    }
-  ];
+  // Логика загрузки файлов
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files) return;
+    
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newPhoto = {
+          id: Date.now() + Math.random(),
+          src: e.target?.result as string,
+          title: file.name.split('.')[0],
+          description: 'Новое фото',
+          category: uploadCategory
+        };
+        setPhotos(prev => [...prev, newPhoto]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
   // Категории с забавными названиями
   const categories = [
     { id: 'all', name: 'Все фото', icon: 'Grid' },
     { id: 'favorite', name: 'Мои любимые', icon: 'Heart' },
     { id: 'beautiful', name: 'Здесь я красивая', icon: 'Star' },
-    { id: 'funny', name: 'А здесь я смешная', icon: 'Smile' }
+    { id: 'funny', name: 'А здесь я смешная', icon: 'Smile' },
+    { id: 'other', name: 'Здесь я по другую сторону', icon: 'Camera' }
   ];
 
   // Фильтруем фото по выбранной категории
-  const photos = selectedCategory === 'all' 
-    ? allPhotos 
-    : allPhotos.filter(photo => photo.category === selectedCategory);
+  const filteredPhotos = selectedCategory === 'all' 
+    ? photos 
+    : photos.filter(photo => photo.category === selectedCategory);
 
   const nextImage = () => {
     if (selectedImage !== null) {
-      setSelectedImage((selectedImage + 1) % photos.length);
+      setSelectedImage((selectedImage + 1) % filteredPhotos.length);
     }
   };
 
   const prevImage = () => {
     if (selectedImage !== null) {
-      setSelectedImage(selectedImage === 0 ? photos.length - 1 : selectedImage - 1);
+      setSelectedImage(selectedImage === 0 ? filteredPhotos.length - 1 : selectedImage - 1);
     }
   };
 
@@ -109,7 +86,7 @@ const Index = () => {
             МОИ ФОТО
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 animate-fade-in max-w-2xl mx-auto">
-            Не поняла как сделать ссылку на фото,<br/>
+            не поняла как сделать ссылку на фото,<br/>
             поэтому создала сайт с ними
           </p>
           
@@ -168,33 +145,54 @@ const Index = () => {
             )}
             
             {isAuthenticated && (
-              <div className="mt-6 max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg animate-scale-in border">
-                <h3 className="text-lg font-semibold mb-4 text-modern">Загрузить новое фото</h3>
+              <div className="mt-6 max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg animate-scale-in border">
+                <h3 className="text-lg font-semibold mb-4 text-modern">Загрузить фото</h3>
+                
+                {/* Выбор категории */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    В какую категорию добавить?
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {categories.filter(cat => cat.id !== 'all').map(category => (
+                      <Button
+                        key={category.id}
+                        onClick={() => setUploadCategory(category.id)}
+                        variant={uploadCategory === category.id ? "default" : "outline"}
+                        className={`text-sm ${
+                          uploadCategory === category.id 
+                            ? 'bg-modern text-white' 
+                            : 'border-modern text-modern hover:bg-modern hover:text-white'
+                        }`}
+                      >
+                        <Icon name={category.icon as any} className="mr-2" size={14} />
+                        {category.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Загрузка файлов */}
                 <Input
                   type="file"
                   accept="image/*"
+                  multiple
                   className="w-full mb-4"
-                  onChange={(e) => {
-                    // Здесь будет логика загрузки фото
-                    console.log('Файл выбран:', e.target.files?.[0]);
-                  }}
+                  onChange={(e) => handleFileUpload(e.target.files)}
                 />
-                <div className="flex space-x-2">
-                  <Button className="flex-1 bg-modern hover:bg-gray-800 text-white">
-                    <Icon name="Upload" className="mr-2" size={16} />
-                    Загрузить
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      setShowUpload(false);
-                      setIsAuthenticated(false);
-                    }}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Готово
-                  </Button>
-                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Можно выбрать несколько фото одновременно
+                </p>
+                
+                <Button 
+                  onClick={() => {
+                    setShowUpload(false);
+                    setIsAuthenticated(false);
+                  }}
+                  className="w-full bg-modern hover:bg-gray-800 text-white"
+                >
+                  Готово
+                </Button>
               </div>
             )}
           </div>
@@ -223,8 +221,17 @@ const Index = () => {
 
         {/* Сетка фотографий */}
         <main className="container mx-auto px-4 pb-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {photos.map((photo, index) => (
+          {filteredPhotos.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                <Icon name="ImagePlus" size={48} className="text-gray-400" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-600 mb-2">Пока ниодной фотографии</h3>
+              <p className="text-gray-500">Загрузите свои фото, чтобы начать!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredPhotos.map((photo, index) => (
               <Dialog key={photo.id}>
                 <DialogTrigger asChild>
                   <Card 
@@ -295,13 +302,13 @@ const Index = () => {
                         {/* Информация о фото */}
                         <div className="absolute bottom-6 left-6 right-6 text-center text-white">
                           <h3 className="text-2xl font-semibold mb-2" style={{ fontFamily: 'Rubik, sans-serif' }}>
-                            {photos[selectedImage].title}
+                            {filteredPhotos[selectedImage].title}
                           </h3>
                           <p className="text-lg opacity-80">
-                            {photos[selectedImage].description}
+                            {filteredPhotos[selectedImage].description}
                           </p>
                           <p className="text-sm opacity-60 mt-2">
-                            {selectedImage + 1} из {photos.length}
+                            {selectedImage + 1} из {filteredPhotos.length}
                           </p>
                         </div>
                       </>
@@ -310,7 +317,8 @@ const Index = () => {
                 </DialogContent>
               </Dialog>
             ))}
-          </div>
+            </div>
+          )}
         </main>
         
         {/* Футер */}

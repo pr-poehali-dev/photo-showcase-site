@@ -2,10 +2,24 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showUpload, setShowUpload] = useState(false);
+  
+  const handlePasswordSubmit = () => {
+    if (password === 'myphotos2024') {
+      setIsAuthenticated(true);
+      setShowUpload(true);
+      setPassword('');
+    } else {
+      alert('Неверный пароль!');
+    }
+  };
 
   // Массив фотографий для галереи
   const photos = [
@@ -60,33 +74,108 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-      {/* Градиентный фон */}
-      <div className="absolute inset-0 bg-gradient-to-br from-coral via-turquoise to-softyellow opacity-10"></div>
+    <div className="min-h-screen bg-white" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+      {/* Минималистичный фон */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white"></div>
       
       {/* Основной контент */}
       <div className="relative z-10">
         {/* Заголовок */}
         <header className="text-center py-16 px-4">
           <h1 
-            className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-coral via-turquoise to-softyellow bg-clip-text text-transparent animate-fade-in mb-4"
+            className="text-6xl md:text-8xl font-bold text-modern animate-fade-in mb-4"
             style={{ fontFamily: 'Rubik, sans-serif' }}
           >
-            ФОТО ГАЛЕРЕЯ
+            МОИ ФОТО
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 animate-fade-in max-w-2xl mx-auto">
-            Коллекция моментов, запечатлённых во времени. Поделись ссылкой и покажи друзьям!
+            Не поняла как сделать ссылку на фото, поэтому создала сайт с ними
           </p>
           
-          {/* Кнопка поделиться */}
+          {/* Кнопки действий */}
           <div className="mt-8 animate-scale-in">
-            <Button 
-              onClick={() => navigator.clipboard.writeText(window.location.href)}
-              className="bg-gradient-to-r from-coral to-turquoise hover:from-turquoise hover:to-coral text-white px-8 py-3 text-lg rounded-full transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <Icon name="Share2" className="mr-2" size={20} />
-              Поделиться галереей
-            </Button>
+            <div className="space-x-4">
+              <Button 
+                onClick={() => navigator.clipboard.writeText(window.location.href)}
+                className="bg-modern hover:bg-gray-800 text-white px-8 py-3 text-lg rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <Icon name="Share2" className="mr-2" size={20} />
+                Поделиться галереей
+              </Button>
+              
+              {!showUpload && (
+                <Button 
+                  onClick={() => setShowUpload(true)}
+                  variant="outline"
+                  className="px-8 py-3 text-lg rounded-lg border-modern text-modern hover:bg-modern hover:text-white transition-all duration-300"
+                >
+                  <Icon name="Plus" className="mr-2" size={20} />
+                  Добавить фото
+                </Button>
+              )}
+            </div>
+            
+            {showUpload && !isAuthenticated && (
+              <div className="mt-6 max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg animate-scale-in border">
+                <h3 className="text-lg font-semibold mb-4 text-modern">Введите пароль для загрузки</h3>
+                <div className="space-y-4">
+                  <Input
+                    type="password"
+                    placeholder="Пароль"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                    className="w-full"
+                  />
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={handlePasswordSubmit}
+                      className="flex-1 bg-modern hover:bg-gray-800 text-white"
+                    >
+                      Войти
+                    </Button>
+                    <Button 
+                      onClick={() => setShowUpload(false)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Отмена
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {isAuthenticated && (
+              <div className="mt-6 max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg animate-scale-in border">
+                <h3 className="text-lg font-semibold mb-4 text-modern">Загрузить новое фото</h3>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  className="w-full mb-4"
+                  onChange={(e) => {
+                    // Здесь будет логика загрузки фото
+                    console.log('Файл выбран:', e.target.files?.[0]);
+                  }}
+                />
+                <div className="flex space-x-2">
+                  <Button className="flex-1 bg-modern hover:bg-gray-800 text-white">
+                    <Icon name="Upload" className="mr-2" size={16} />
+                    Загрузить
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setShowUpload(false);
+                      setIsAuthenticated(false);
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Готово
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -97,7 +186,7 @@ const Index = () => {
               <Dialog key={photo.id}>
                 <DialogTrigger asChild>
                   <Card 
-                    className="group cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 animate-fade-in border-0"
+                    className="group cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 animate-fade-in border-0 bg-white"
                     style={{ animationDelay: `${index * 0.1}s` }}
                     onClick={() => setSelectedImage(index)}
                   >
@@ -105,12 +194,12 @@ const Index = () => {
                       <img
                         src={photo.src}
                         alt={photo.title}
-                        className="w-full h-64 md:h-80 object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-64 md:h-80 object-cover transition-transform duration-700 group-hover:scale-110 grayscale hover:grayscale-0"
                         loading="lazy"
                       />
                       
-                      {/* Градиентный оверлей */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      {/* Темный оверлей */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       
                       {/* Текст поверх фото */}
                       <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
@@ -185,15 +274,15 @@ const Index = () => {
         {/* Футер */}
         <footer className="text-center py-8 px-4">
           <div className="flex justify-center items-center space-x-6 text-gray-600">
-            <Button variant="ghost" className="hover:text-coral transition-colors">
+            <Button variant="ghost" className="hover:text-modern transition-colors">
               <Icon name="Camera" className="mr-2" size={20} />
               Все фото
             </Button>
-            <Button variant="ghost" className="hover:text-turquoise transition-colors">
+            <Button variant="ghost" className="hover:text-modern transition-colors">
               <Icon name="Heart" className="mr-2" size={20} />
               Избранное
             </Button>
-            <Button variant="ghost" className="hover:text-softyellow transition-colors">
+            <Button variant="ghost" className="hover:text-modern transition-colors">
               <Icon name="Download" className="mr-2" size={20} />
               Скачать
             </Button>
